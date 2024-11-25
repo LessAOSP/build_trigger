@@ -12,7 +12,7 @@ jobs:
       - name: Build LOS
         run: |
           #!/bin/bash
-          cd /home/aghora/los
+          cd /home/aghora/los/
           source build/envsetup.sh
           lunch lineage_vitamin-ap2a-userdebug
           mka bacon -j20
