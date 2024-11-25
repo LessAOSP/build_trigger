@@ -1,0 +1,21 @@
+name: Build LOS
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build LOS
+        run: |
+          #!/bin/bash
+          cd /home/aghora/los
+          source build/envsetup.sh
+          lunch lineage_vitamin-ap2a-userdebug
+          mka bacon -j20
+      - name: Report Build Status to GitHub
+        run: |
+          STATUS=$(curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -d '{"state": "success", "target_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "description": "Build successful", "context": "continuous-integration/jenkins"}' https://api.github.com/repos/username/repository/statuses/${{ github.sha }})
