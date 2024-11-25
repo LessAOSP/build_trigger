@@ -45,9 +45,7 @@ jobs:
       # Step 5: Run Build Script
       - name: Execute Build Script
         run: |
-          cd $LOS_DIR
-          echo "Running build script..."
-          # Replace with your build commands
+          cd /home/aghora/los/
           source build/envsetup.sh
           lunch lineage_vitamin-ap2a-userdebug
           make bacon -j20
