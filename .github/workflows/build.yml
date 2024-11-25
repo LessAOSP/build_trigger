@@ -1,22 +1,60 @@
-name: Build LOS
+name: Build Custom ROM
+
 on:
   push:
     branches:
-      - main
+      - main  # Replace 'main' with your target branch
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build LOS
+      # Step 1: Checkout Repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set Up Environment Variables
+      - name: Set up environment variables
         run: |
-          #!/bin/bash
-          echo "Navigating to $WORKSPACE/los/"
-          cd $WORKSPACE/los/
+          echo "Setting up environment variables"
+          echo "HOME=/home/aghora" >> $GITHUB_ENV
+          echo "LOS_DIR=/home/aghora/los" >> $GITHUB_ENV
+
+      # Step 3: Verify Directory Access (Debugging Step)
+      - name: Debug Directory Access
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Home directory contents:"
+          ls -l $HOME
+          echo "LOS directory contents:"
+          ls -l $LOS_DIR || echo "Directory $LOS_DIR does not exist!"
+
+      # Step 4: Prepare Directory (if necessary)
+      - name: Ensure LOS Directory Exists
+        run: |
+          if [ ! -d "$LOS_DIR" ]; then
+            echo "LOS directory not found. Creating it."
+            mkdir -p $LOS_DIR
+          else
+            echo "LOS directory exists."
+          fi
+          echo "Final LOS directory contents:"
+          ls -l $LOS_DIR
+
+      # Step 5: Run Build Script
+      - name: Execute Build Script
+        run: |
+          cd $LOS_DIR
+          echo "Running build script..."
+          # Replace with your build commands
           source build/envsetup.sh
           lunch lineage_vitamin-ap2a-userdebug
-          mka bacon -j20
-      - name: Report Build Status to GitHub
-        run: |
-          STATUS=$(curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -d '{"state": "success", "target_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "description": "Build successful", "context": "continuous-integration/jenkins"}' https://api.github.com/repos/username/repository/statuses/${{ github.sha }})
+          make bacon -j20
+
+      # Step 6: Upload Build Artifacts (Optional)
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: rom-build
+          path: $LOS_DIR/output
